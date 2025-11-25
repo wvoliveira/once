@@ -1,0 +1,59 @@
+{
+	"info": {
+		"_postman_id": "63568de2-c0b5-4f4e-bef6-63161eb7efba",
+		"name": "Once",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "2226970"
+	},
+	"item": [
+		{
+			"name": "Upload",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "postman-cloud:///1f0c9bb8-18d6-4500-bd80-07b5f89b4fc5"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8080/api/upload",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"upload"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Download",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/files/7cd38296f1e5a481571ad7961858495d",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"files",
+						"7cd38296f1e5a481571ad7961858495d"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
