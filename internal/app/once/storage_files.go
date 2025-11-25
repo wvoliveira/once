@@ -9,6 +9,7 @@ import (
 
 type StorageFiles interface {
 	Write(id, filename string, content []byte) error
+	GetFile(id string) ([]byte, error)
 }
 
 type storageFiles struct {
@@ -23,6 +24,15 @@ func NewStorageFiles(cfg configs.Config) (StorageFiles, error) {
 	return storageFiles{cfg: cfg}, nil
 }
 
+func (s storageFiles) Write(id, filename string, content []byte) error {
+	filePath := filepath.Join(s.cfg.StorageFolder, id)
+
+	if err := os.WriteFile(filePath, content, 0600); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s storageFiles) GetFile(id string) ([]byte, error) {
 	filePath := filepath.Join(s.cfg.StorageFolder, id)
 	data, err := os.ReadFile(filePath)
@@ -30,19 +40,6 @@ func (s storageFiles) GetFile(id string) ([]byte, error) {
 		return nil, err
 	}
 
-	// Limpeza final: Apaga o arquivo físico
-	// (Fazemos isso em background ou defer para não atrasar a resposta,
-	//  mas aqui faremos síncrono por simplicidade)
 	defer os.Remove(filePath)
 	return data, nil
-}
-
-func (s storageFiles) Write(id, filename string, content []byte) error {
-	filePath := filepath.Join(s.cfg.StorageFolder, id)
-
-	// Salva arquivo físico
-	if err := os.WriteFile(filePath, content, 0600); err != nil {
-		return err
-	}
-	return nil
 }

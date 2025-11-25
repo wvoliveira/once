@@ -2,10 +2,12 @@ package once
 
 import (
 	"time"
+
+	"github.com/wvoliveira/once/internal/pkg/util"
 )
 
 type Service interface {
-	Upload(id, filename string, data []byte, ttl time.Time) error
+	Upload(filename string, data []byte, ttl time.Time) (string, error)
 	Download(id string) ([]byte, Content, error)
 }
 
@@ -21,19 +23,31 @@ func NewService(storageDB StorageDB, storageFiles StorageFiles) Service {
 	}
 }
 
-func (s service) Upload(id, filename string, data []byte, ttl time.Time) error {
-	err := s.storageDB.Save(id, filename, ttl)
+func (s service) Upload(filename string, data []byte, ttl time.Time) (string, error) {
+	fileID := util.GenerateID()
+
+	err := s.storageDB.Save(fileID, filename, ttl)
 	if err != nil {
-		return err
+		return fileID, err
 	}
 
-	err = s.storageFiles.Write(id, filename, data)
+	err = s.storageFiles.Write(fileID, filename, data)
 	if err != nil {
-		return err
+		return fileID, err
 	}
-	return nil
+	return fileID, nil
 }
 
 func (s service) Download(id string) ([]byte, Content, error) {
-	return nil, Content{}, nil
+	content, err := s.storageDB.Get(id)
+	if err != nil {
+		return nil, Content{}, err
+	}
+
+	data, err := s.storageFiles.GetFile(id)
+	if err != nil {
+		return nil, Content{}, err
+	}
+
+	return data, content, nil
 }

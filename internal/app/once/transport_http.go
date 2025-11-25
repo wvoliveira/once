@@ -17,7 +17,6 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/httprate"
 	"github.com/wvoliveira/once/configs"
-	"github.com/wvoliveira/once/internal/pkg/util"
 )
 
 // Limite de upload (ex: 10MB) para segurança
@@ -63,7 +62,7 @@ func NewTransportHTTP(config configs.Config, svc Service) TransportHTTP {
 	}
 
 	r.Post("/api/upload", handler.HTTPUpload)
-	r.Post("/files/{id}", handler.HTTPDownload)
+	r.Get("/files/{id}", handler.HTTPDownload)
 
 	return handler
 }
@@ -107,7 +106,6 @@ func (t transportHTTP) HTTPUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Pega o arquivo do form
 	file, header, err := r.FormFile("file")
 	if err != nil {
 		slog.Error("error to get file", "error", err.Error())
@@ -133,9 +131,7 @@ func (t transportHTTP) HTTPUpload(w http.ResponseWriter, r *http.Request) {
 
 	ttl := time.Now().Add(time.Second * time.Duration(ttlSeconds))
 
-	// Gera ID e Salva
-	id := util.GenerateID()
-	err = t.service.Upload(id, header.Filename, fileBytes, ttl)
+	id, err := t.service.Upload(header.Filename, fileBytes, ttl)
 	if err != nil {
 		slog.Error("error to save file", "error", err.Error())
 		http.Error(w, "sorry, there was an error", http.StatusInternalServerError)
@@ -154,14 +150,12 @@ func (t transportHTTP) HTTPUpload(w http.ResponseWriter, r *http.Request) {
 }
 
 func (t transportHTTP) HTTPDownload(w http.ResponseWriter, r *http.Request) {
-	// Pega o ID da URL (Go 1.22 feature)
 	id := r.PathValue("id")
 
-	// Chama a lógica de visualização única
 	data, meta, err := t.service.Download(id)
 	if err != nil {
-		// Se deu erro, assumimos 404 para não vazar se o arquivo existia ou não
-		http.Error(w, "Arquivo não encontrado ou link expirado", http.StatusNotFound)
+		slog.Error("error to get file", "error", err.Error())
+		http.Error(w, "not found", http.StatusNotFound)
 		return
 	}
 
@@ -171,6 +165,5 @@ func (t transportHTTP) HTTPDownload(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", http.DetectContentType(data)) // Ou meta.MimeType se você salvou
 	w.Header().Set("Content-Length", strconv.Itoa(len(data)))
 
-	// Escreve os bytes
 	w.Write(data)
 }

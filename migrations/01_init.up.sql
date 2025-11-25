@@ -1,10 +1,8 @@
 CREATE TABLE
   IF NOT EXISTS content (
     id TEXT PRIMARY KEY,
-    text TEXT,
     file_id TEXT,
     file_name TEXT,
-    mime_type  TEXT,
     expires_at TEXT NOT NULL,
     created_at TEXT NOT NULL
   );

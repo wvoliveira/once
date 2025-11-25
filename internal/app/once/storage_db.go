@@ -13,6 +13,7 @@ import (
 
 type StorageDB interface {
 	Save(fileID, filename string, ttl time.Time) error
+	Get(fileID string) (Content, error)
 }
 
 type storageDB struct {
@@ -30,38 +31,56 @@ func NewStorageDB(cfg configs.Config) (StorageDB, error) {
 
 func (s storageDB) Save(fileID, filename string, ttl time.Time) error {
 	var (
-		id      = util.GenerateID()
+		index   = util.GenerateID()
 		timeNow = time.Now()
 	)
 
 	_, err := s.db.Exec(`
 		INSERT INTO content (id, file_id, file_name, expires_at, created_at)
 		VALUES (?, ?, ?, ?, ?)`,
-		id, fileID, filename, fmt.Sprintf("%s", ttl.Format(time.RFC3339)), timeNow.Format(time.RFC3339),
+		index, fileID, filename, fmt.Sprintf("%s", ttl.Format(time.RFC3339)), timeNow.Format(time.RFC3339),
 	)
 	return err
 }
 
-func (s storageDB) Get(fileID string) error {
+func (s storageDB) Get(fileID string) (Content, error) {
 	row := s.db.QueryRow(`
-		SELECT file_id, expires_at FROM content WHERE file_id = ?`,
+		DELETE FROM content 
+        WHERE file_id = ?
+        RETURNING id, file_name, expires_at, created_at`,
 		fileID,
 	)
 
-	var ExpiresAt string
-	err := row.Scan(&fileID, &ExpiresAt)
+	var (
+		id        string
+		fileName  string
+		expiresAt string
+		createdAt string
+	)
+
+	err := row.Scan(&id, &fileName, &expiresAt, &createdAt)
 	if err != nil {
-		return err
+		return Content{}, err
 	}
 
-	expiresAt, err := time.Parse(time.RFC3339, ExpiresAt)
+	ExpiresAt, err := time.Parse(time.RFC3339, expiresAt)
 	if err != nil {
-		return err
+		return Content{}, err
 	}
 
-	if time.Now().After(expiresAt) {
-		return ErrContentExpired
+	CreatedAt, err := time.Parse(time.RFC3339, createdAt)
+	if err != nil {
+		return Content{}, err
 	}
 
-	return err
+	if time.Now().After(ExpiresAt) {
+		return Content{}, ErrContentExpired
+	}
+
+	return Content{
+		ID:        id,
+		FileName:  fileName,
+		ExpiresAt: ExpiresAt,
+		CreatedAt: CreatedAt,
+	}, err
 }
