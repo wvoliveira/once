@@ -5,12 +5,14 @@ import (
 	"os"
 	"strconv"
 	"time"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 var (
 	databaseURI                  = getEnv("ONCE_DATABASE_URI", "file:app.db?_journal_mode=WAL&_cache_size=2000&_foreign_keys=on&_busy_timeout=5000&_synchronous=NORMAL")
 	storageFolder                = getEnv("ONCE_STORAGE_FOLDER", "./uploads")
-	storageCleanerInterval       = getEnv("ONCE_STORAGE_CLEANER_INTERVAL", "./uploads")
+	storageCleanerInterval       = getEnv("ONCE_STORAGE_CLEANER_INTERVAL", "60")
 	httpServerPortString         = getEnv("ONCE_HTTP_SERVER_PORT", "8080")
 	httpServerReadTimeoutString  = getEnv("ONCE_HTTP_SERVER_READ_TIMEOUT", "5")
 	httpServerWriteTimeoutString = getEnv("ONCE_HTTP_SERVER_WRITE_TIMEOUT", "5")
