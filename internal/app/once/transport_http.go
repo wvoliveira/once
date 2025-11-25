@@ -61,8 +61,8 @@ func NewTransportHTTP(config configs.Config, svc Service) TransportHTTP {
 		httpServer: server,
 	}
 
-	r.Post("/api/upload", handler.HTTPUpload)
-	r.Get("/files/{id}", handler.HTTPDownload)
+	r.Post("/api/files", handler.HTTPUpload)
+	r.Get("/api/files/{id}", handler.HTTPDownload)
 
 	return handler
 }
@@ -146,6 +146,7 @@ func (t transportHTTP) HTTPUpload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(resp)
 }
 
@@ -166,4 +167,5 @@ func (t transportHTTP) HTTPDownload(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Length", strconv.Itoa(len(data)))
 
 	w.Write(data)
+	w.WriteHeader(http.StatusOK)
 }
