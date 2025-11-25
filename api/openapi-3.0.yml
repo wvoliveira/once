@@ -1,0 +1,65 @@
+openapi: '3.0.3'
+info:
+  title: Once
+  version: '1.0'
+servers:
+  - url: http://localhost:8080/api
+paths:
+  /files:
+    post:
+      summary: Create file
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary # Indicates a file upload
+                description:
+                  type: string
+              required:
+                - file
+
+      responses:
+        '201':
+          description: File uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  link:
+                    type: string
+                  expires_at:
+                    type: string
+  /files/{fileID}:
+    get:
+      summary: Get file by ID
+      operationId: getFileByID
+      parameters:
+        - in: path
+          name: fileID
+          schema:
+            type: string
+          required: true
+          description: ID of the secret file
+
+      responses:
+        '200':
+          description: File uploaded successfully
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: File not found
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: not found

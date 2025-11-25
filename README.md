@@ -58,28 +58,9 @@ CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o server .
 ```
 
 
-## Uso (exemplos de Integração)
+## Uso
 
-Nota: O código atual implementa a lógica Core. Abaixo exemplos de como seria o uso caso exponha via HTTP.
-
-1. Upload de Arquivo
-Envia um arquivo que expira em 1 hora ou após a primeira visualização.
-
-```bash
-# Exemplo de chamada interna
-sys.Upload("id-unico-123", "contrato.pdf", conteudoBytes, 1 * time.Hour)
-```
-
-2. Visualização Única
-Tenta recuperar o arquivo. Se funcionar, o arquivo é deletado instantaneamente do sistema.
-
-```bash
-# Exemplo de chamada interna
-data, err := sys.ViewOneTime("id-unico-123")
-if err != nil {
-    fmt.Println("Arquivo não encontrado ou já lido!")
-}
-```
+Use a collection do Postman encontrada no arquivo [api/Once.postman_collection](api/Once.postman_collection.json).
 
 
 ## Configuração

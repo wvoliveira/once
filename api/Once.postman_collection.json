@@ -22,14 +22,14 @@
 					]
 				},
 				"url": {
-					"raw": "localhost:8080/api/upload",
+					"raw": "localhost:8080/api/files",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
 						"api",
-						"upload"
+						"files"
 					]
 				}
 			},
@@ -41,15 +41,16 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/files/7cd38296f1e5a481571ad7961858495d",
+					"raw": "http://localhost:8080/api/files/9d8c8ab8add6f5c2c513e2d269659fef",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
+						"api",
 						"files",
-						"7cd38296f1e5a481571ad7961858495d"
+						"9d8c8ab8add6f5c2c513e2d269659fef"
 					]
 				}
 			},
