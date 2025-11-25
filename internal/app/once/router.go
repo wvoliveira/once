@@ -1,14 +1,15 @@
-package main
+package once
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
 	"log"
 	"mime/multipart"
 	"net/http"
 	"runtime"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
 func errorHandler(w http.ResponseWriter, r *http.Request, err error) {
@@ -205,7 +206,6 @@ func healthcheckHandler(w http.ResponseWriter, r *http.Request) {
 func infoHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	body := responseInfoBody{
-		AppVersion:    AppVersion,
 		GolangVersion: runtime.Version(),
 	}
 

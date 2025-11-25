@@ -1,4 +1,4 @@
-package main
+package once
 
 import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
