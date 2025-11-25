@@ -12,7 +12,7 @@ import (
 )
 
 type StorageDB interface {
-	Save(fileID, filename string, ttl time.Duration) error
+	Save(fileID, filename string, ttl time.Time) error
 }
 
 type storageDB struct {
@@ -28,7 +28,7 @@ func NewStorageDB(cfg configs.Config) (StorageDB, error) {
 	return storageDB{db: db, cfg: cfg}, nil
 }
 
-func (s storageDB) Save(fileID, filename string, ttl time.Duration) error {
+func (s storageDB) Save(fileID, filename string, ttl time.Time) error {
 	var (
 		id      = util.GenerateID()
 		timeNow = time.Now()
@@ -37,7 +37,31 @@ func (s storageDB) Save(fileID, filename string, ttl time.Duration) error {
 	_, err := s.db.Exec(`
 		INSERT INTO content (id, file_id, file_name, expires_at, created_at)
 		VALUES (?, ?, ?, ?, ?)`,
-		id, fileID, filename, fmt.Sprintf("%d", ttl), timeNow.Format(time.RFC3339),
+		id, fileID, filename, fmt.Sprintf("%s", ttl.Format(time.RFC3339)), timeNow.Format(time.RFC3339),
 	)
+	return err
+}
+
+func (s storageDB) Get(fileID string) error {
+	row := s.db.QueryRow(`
+		SELECT file_id, expires_at FROM content WHERE file_id = ?`,
+		fileID,
+	)
+
+	var ExpiresAt string
+	err := row.Scan(&fileID, &ExpiresAt)
+	if err != nil {
+		return err
+	}
+
+	expiresAt, err := time.Parse(time.RFC3339, ExpiresAt)
+	if err != nil {
+		return err
+	}
+
+	if time.Now().After(expiresAt) {
+		return ErrContentExpired
+	}
+
 	return err
 }

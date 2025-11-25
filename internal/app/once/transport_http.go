@@ -63,7 +63,7 @@ func NewTransportHTTP(config configs.Config, svc Service) TransportHTTP {
 	}
 
 	r.Post("/api/upload", handler.HTTPUpload)
-	r.Post("/api/download", handler.HTTPDownload)
+	r.Post("/files/{id}", handler.HTTPDownload)
 
 	return handler
 }
@@ -130,7 +130,8 @@ func (t transportHTTP) HTTPUpload(w http.ResponseWriter, r *http.Request) {
 	if ttlSeconds <= 0 {
 		ttlSeconds = 3600
 	}
-	ttl := time.Duration(ttlSeconds) * time.Second
+
+	ttl := time.Now().Add(time.Second * time.Duration(ttlSeconds))
 
 	// Gera ID e Salva
 	id := util.GenerateID()
@@ -144,8 +145,8 @@ func (t transportHTTP) HTTPUpload(w http.ResponseWriter, r *http.Request) {
 	// Retorna JSON
 	resp := UploadResponse{
 		ID:        id,
-		Link:      fmt.Sprintf("http://localhost:8080/files/%s", id),
-		ExpiresAt: time.Now().Add(ttl).Format(time.RFC3339),
+		Link:      fmt.Sprintf("http://%s/files/%s", r.Host, id),
+		ExpiresAt: ttl.Format(time.RFC3339),
 	}
 
 	w.Header().Set("Content-Type", "application/json")

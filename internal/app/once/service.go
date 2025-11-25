@@ -5,7 +5,7 @@ import (
 )
 
 type Service interface {
-	Upload(id, filename string, data []byte, ttl time.Duration) error
+	Upload(id, filename string, data []byte, ttl time.Time) error
 	Download(id string) ([]byte, Content, error)
 }
 
@@ -21,7 +21,7 @@ func NewService(storageDB StorageDB, storageFiles StorageFiles) Service {
 	}
 }
 
-func (s service) Upload(id, filename string, data []byte, ttl time.Duration) error {
+func (s service) Upload(id, filename string, data []byte, ttl time.Time) error {
 	err := s.storageDB.Save(id, filename, ttl)
 	if err != nil {
 		return err
