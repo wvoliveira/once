@@ -1,6 +1,8 @@
 package once
 
-import "time"
+import (
+	"time"
+)
 
 type Service interface {
 	Upload(id, filename string, data []byte, ttl time.Duration) error
@@ -20,6 +22,15 @@ func NewService(storageDB StorageDB, storageFiles StorageFiles) Service {
 }
 
 func (s service) Upload(id, filename string, data []byte, ttl time.Duration) error {
+	err := s.storageDB.Save(id, filename, ttl)
+	if err != nil {
+		return err
+	}
+
+	err = s.storageFiles.Write(id, filename, data)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

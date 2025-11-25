@@ -110,15 +110,18 @@ func (t transportHTTP) HTTPUpload(w http.ResponseWriter, r *http.Request) {
 	// Pega o arquivo do form
 	file, header, err := r.FormFile("file")
 	if err != nil {
-		http.Error(w, "Campo 'file' é obrigatório", http.StatusBadRequest)
+		slog.Error("error to get file", "error", err.Error())
+		http.Error(w, "field file is required", http.StatusBadRequest)
 		return
 	}
+
 	defer file.Close()
 
 	// Lê o conteúdo para memória (Para arquivos gigantes, usaríamos io.Copy direto pro disco)
 	fileBytes, err := io.ReadAll(file)
 	if err != nil {
-		http.Error(w, "Erro ao ler arquivo", http.StatusInternalServerError)
+		slog.Error("error to read file", "error", err.Error())
+		http.Error(w, "sorry, there was an error", http.StatusInternalServerError)
 		return
 	}
 
@@ -133,7 +136,8 @@ func (t transportHTTP) HTTPUpload(w http.ResponseWriter, r *http.Request) {
 	id := util.GenerateID()
 	err = t.service.Upload(id, header.Filename, fileBytes, ttl)
 	if err != nil {
-		http.Error(w, "Erro ao salvar", http.StatusInternalServerError)
+		slog.Error("error to save file", "error", err.Error())
+		http.Error(w, "sorry, there was an error", http.StatusInternalServerError)
 		return
 	}
 
@@ -143,6 +147,7 @@ func (t transportHTTP) HTTPUpload(w http.ResponseWriter, r *http.Request) {
 		Link:      fmt.Sprintf("http://localhost:8080/files/%s", id),
 		ExpiresAt: time.Now().Add(ttl).Format(time.RFC3339),
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
 }
