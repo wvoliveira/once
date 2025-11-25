@@ -8,22 +8,32 @@ import (
 )
 
 var (
-	DatabaseURI = getEnv("ONCE_DATABASE_URI", "file:app.db?_journal_mode=WAL&_cache_size=2000&_foreign_keys=on&_busy_timeout=5000&_synchronous=NORMAL")
-
-	httpServerPortString = getEnv("ONCE_HTTP_SERVER_PORT", "8080")
-	HTTPServerPort       int
-
-	httpServerReadTimeoutString = getEnv("ONCE_HTTP_SERVER_READ_TIMEOUT", "10")
-	HTTPServerReadTimeout       time.Duration
-
-	httpServerWriteTimeoutString = getEnv("ONCE_HTTP_SERVER_WRITE_TIMEOUT", "10")
-	HTTPServerWriteTimeout       time.Duration
+	databaseURI                  = getEnv("ONCE_DATABASE_URI", "file:app.db?_journal_mode=WAL&_cache_size=2000&_foreign_keys=on&_busy_timeout=5000&_synchronous=NORMAL")
+	storageFolder                = getEnv("ONCE_STORAGE_FOLDER", "./uploads")
+	storageCleanerInterval       = getEnv("ONCE_STORAGE_CLEANER_INTERVAL", "./uploads")
+	httpServerPortString         = getEnv("ONCE_HTTP_SERVER_PORT", "8080")
+	httpServerReadTimeoutString  = getEnv("ONCE_HTTP_SERVER_READ_TIMEOUT", "5")
+	httpServerWriteTimeoutString = getEnv("ONCE_HTTP_SERVER_WRITE_TIMEOUT", "5")
 )
 
-func Init() {
-	HTTPServerPort = toIntOrError(httpServerPortString)
-	HTTPServerReadTimeout = time.Duration(toIntOrError(httpServerReadTimeoutString)) * time.Second
-	HTTPServerWriteTimeout = time.Duration(toIntOrError(httpServerWriteTimeoutString))
+type Config struct {
+	DatabaseURI            string
+	StorageFolder          string
+	StorageCleanerInterval time.Duration
+	HTTPServerPort         int
+	HTTPServerReadTimeout  time.Duration
+	HTTPServerWriteTimeout time.Duration
+}
+
+func New() Config {
+	return Config{
+		DatabaseURI:            databaseURI,
+		StorageFolder:          storageFolder,
+		StorageCleanerInterval: time.Duration(toIntOrError(storageCleanerInterval)) * time.Second,
+		HTTPServerPort:         toIntOrError(httpServerPortString),
+		HTTPServerReadTimeout:  time.Duration(toIntOrError(httpServerReadTimeoutString)) * time.Second,
+		HTTPServerWriteTimeout: time.Duration(toIntOrError(httpServerWriteTimeoutString)),
+	}
 }
 
 func getEnv(key, defaultValue string) string {

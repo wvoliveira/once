@@ -15,7 +15,9 @@ import (
 )
 
 func main() {
-	db, err := once.NewStorageDB(configs.DatabaseURI)
+	cfg := configs.New()
+
+	db, err := once.NewStorageDB(cfg)
 	if err != nil {
 		slog.Error("error to create new storage DB", "error", err.Error())
 		os.Exit(1)
@@ -23,10 +25,10 @@ func main() {
 
 	router := Router()
 	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", configs.HTTPServerPort),
+		Addr:         fmt.Sprintf(":%d", cfg.HTTPServerPort),
 		Handler:      router,
-		ReadTimeout:  configs.HTTPServerReadTimeout,
-		WriteTimeout: configs.HTTPServerWriteTimeout,
+		ReadTimeout:  cfg.HTTPServerReadTimeout,
+		WriteTimeout: cfg.HTTPServerWriteTimeout,
 	}
 
 	closeIdleConnections := make(chan struct{})
